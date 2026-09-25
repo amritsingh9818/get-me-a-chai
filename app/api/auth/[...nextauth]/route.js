@@ -41,7 +41,7 @@ callbacks: {
       if (account.provider == "github") {
         try { // <--- YOU MISSED THIS 'try' KEYWORD
           // connect to database
-          const client = await mongoose.connect("mongodb://localhost:27017/chai")
+          const client = await mongoose.connect(process.env.MONGODB_URI)
           console.log("GitHub sent this user data:", user);
           
           // ADDED AWAIT HERE! Without 'await', this will always be true and never save users
