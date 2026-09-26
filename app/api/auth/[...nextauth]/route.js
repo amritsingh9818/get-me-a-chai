@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import User from '@/app/model/User';
 import Payment from '@/app/model/Payment';
 import connectDB from '../../../db/connectDB';
+import GoogleProvider from "next-auth/providers/google"
 
 export const authoptions= NextAuth({
   providers: [
@@ -15,8 +16,12 @@ export const authoptions= NextAuth({
     clientId: process.env.GITHUB_ID,
     clientSecret: process.env.GITHUB_SECRET,
     allowDangerousEmailAccountLinking: true,
-  })
-   
+  }),
+   GoogleProvider({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  }),
+],
     // AppleProvider({
     //   clientId: process.env.APPLE_ID,
     //   clientSecret: process.env.APPLE_SECRET
@@ -34,7 +39,7 @@ export const authoptions= NextAuth({
     //   server: process.env.MAIL_SERVER,
     //   from: 'NextAuth.js <no-reply@example.com>'
     // }),
-  ],
+  
 
 callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
