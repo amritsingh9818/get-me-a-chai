@@ -23,11 +23,22 @@ export const authoptions= NextAuth({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     allowDangerousEmailAccountLinking: true,
   }),
+  
   LinkedInProvider({
-    clientId: process.env.LINKEDIN_CLIENT_ID,
-    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-    allowDangerousEmailAccountLinking: true,
-  }),
+  clientId: process.env.LINKEDIN_CLIENT_ID,
+  clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+  allowDangerousEmailAccountLinking: true,
+  issuer: "https://www.linkedin.com/oauth",
+  jwks_endpoint: "https://www.linkedin.com/oauth/openid/jwks", // 👈 Yeh security keys ka link hai
+  profile(profile) {
+    return {
+      id: profile.sub,
+      name: profile.name,
+      email: profile.email,
+      image: profile.picture,
+    };
+  },
+}),
   FacebookProvider({
     clientId: process.env.FACEBOOK_CLIENT_ID,
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
