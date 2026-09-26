@@ -60,34 +60,38 @@ export const authoptions= NextAuth({
   
 
 callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
-      if (account.provider == "github") {
-        try { // <--- YOU MISSED THIS 'try' KEYWORD
-          // connect to database
-          const client = await mongoose.connect(process.env.MONGODB_URI)
-          console.log("GitHub sent this user data:", user);
-          
-          // ADDED AWAIT HERE! Without 'await', this will always be true and never save users
-          const currentUser = await User.findOne({ email: user.email })
-          
-          if (!currentUser) {
-            const newUser = new User({
-              email: user.email,
-              username: user.email.split("@")[0]
-            })
-            await newUser.save()
-            console.log("✅ Successfully saved new user to MongoDB!");
-          }
-
-          return true;
-        } catch (error) { // Now this catch works perfectly because of the try above
-          // If Mongoose crashes, this will print the EXACT reason in your VS Code terminal
-          console.error("❌ Error saving user to MongoDB:", error);
-          return false; // Stop the login if DB fails
+  async signIn({ user, account, profile, email, credentials }) {
+    if (
+      account.provider === "github" ||
+      account.provider === "google" ||
+      account.provider === "linkedin" ||
+      account.provider === "facebook"
+    ) {
+      try {
+        // connect to database
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log(`${account.provider} sent this user data:`, user);
+        
+        const currentUser = await User.findOne({ email: user.email });
+        
+        if (!currentUser) {
+          const newUser = new User({
+            email: user.email,
+            username: user.email.split("@")[0]
+          });
+          await newUser.save();
+          console.log("✅ Successfully saved new user to MongoDB!");
         }
+
+        return true; 
+      } catch (error) { 
+        console.error("❌ Error saving user to MongoDB:", error);
+        return false; // Stop the login if DB fails
       }
-      return false; // Always return false if it's not github
-    },
+    }
+    return false; // Always return false if provider is not in the list
+  }
+},
     
     async session({ session, user, token }) {
       // Must use findOne (not find) so it returns an object instead of an array
