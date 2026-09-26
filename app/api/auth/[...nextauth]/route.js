@@ -1,14 +1,15 @@
 import NextAuth from 'next-auth'
-// import AppleProvider from 'next-auth/providers/apple'
-// import FacebookProvider from 'next-auth/providers/facebook'
-// import GoogleProvider from 'next-auth/providers/google'
-// import EmailProvider from 'next-auth/providers/email'
+import AppleProvider from 'next-auth/providers/apple'
+import FacebookProvider from 'next-auth/providers/facebook'
+import EmailProvider from 'next-auth/providers/email'
 import GitHubProvider from "next-auth/providers/github";
 import mongoose from 'mongoose';
 import User from '@/app/model/User';
 import Payment from '@/app/model/Payment';
 import connectDB from '../../../db/connectDB';
 import GoogleProvider from "next-auth/providers/google"
+import TwitterProvider from "next-auth/providers/twitter";
+import LinkedInProvider from "next-auth/providers/linkedin";
 
 export const authoptions= NextAuth({
   providers: [
@@ -20,6 +21,23 @@ export const authoptions= NextAuth({
    GoogleProvider({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: true,
+  }),
+  LinkedInProvider({
+    clientId: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: true,
+  }),
+  FacebookProvider({
+    clientId: process.env.FACEBOOK_CLIENT_ID,
+    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: true,
+  }),
+  TwitterProvider({
+    clientId: process.env.TWITTER_CLIENT_ID,
+    clientSecret: process.env.TWITTER_CLIENT_SECRET,
+    version: "2.0", // Twitter OAuth 2.0 requires this
+    allowDangerousEmailAccountLinking: true,
   }),
 ],
     // AppleProvider({
