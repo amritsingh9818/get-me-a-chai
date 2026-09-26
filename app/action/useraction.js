@@ -3,11 +3,23 @@ import Razorpay from "razorpay";
 import Payment from '@/app/model/Payment';
 import User from "@/app/model/User";
 import connectDB from "@/app/db/connectDB";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export const initiate = async (amount, to_username, paymentform) => {
     console.log("SERVER ACTION RECEIVED:", { amount, to_username, paymentform });
  
     await connectDB();
+    
+    // 0. Check session and prevent self-payment gapla
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return { error: "You must be logged in to make a payment" };
+    }
+
+    if (session.user.name === to_username) {
+        return { error: "Aap khud ke account par payment nahi bhej sakte!" };
+    }
     
     // 1. Find the creator receiving the money
     let user = await User.findOne({ username: to_username });
@@ -74,8 +86,5 @@ export const updateProfile = async (data, oldusername) => {
         await Payment.updateMany({to_user:oldusername},{to_user:ndata.username})
     }
     
- await User.updateOne({ email: ndata.email }, ndata, { upsert: true });
-  
-    
-   
+   await User.updateOne({ email: ndata.email }, ndata, { upsert: true });
 }
