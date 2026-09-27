@@ -4,38 +4,41 @@ import Payment from '@/app/model/Payment';
 import User from "@/app/model/User";
 import connectDB from "@/app/db/connectDB";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export const initiate = async (amount, to_username, paymentform) => {
     console.log("SERVER ACTION RECEIVED:", { amount, to_username, paymentform });
  
     await connectDB();
     
-    // 0. Check session and prevent self-payment gapla
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // 1. Check session without needing explicit authOptions
+    const session = await getServerSession();
+    if (!session || !session.user) {
         return { error: "You must be logged in to make a payment" };
     }
 
-    if (session.user.name === to_username) {
+    // 2. Find the logged-in user's actual username from the database using their email
+    let loggedInUser = await User.findOne({ email: session.user.email });
+
+    // 3. Prevent self-payment by comparing database usernames
+    if (loggedInUser && loggedInUser.username === to_username) {
         return { error: "Aap khud ke account par payment nahi bhej sakte!" };
     }
     
-    // 1. Find the creator receiving the money
+    // 4. Find the creator receiving the money
     let user = await User.findOne({ username: to_username });
     
-    // 2. Check if they have connected their Razorpay
+    // 5. Check if they have connected their Razorpay
     if (!user || !user.razorpayid || !user.razorpaysecret) {
         return { error: "This creator has not set up their payment details yet." };
     }
 
-    // 3. Use the CREATOR'S keys to generate the order
+    // 6. Use the CREATOR'S keys to generate the order
     var instance = new Razorpay({ 
         key_id: user.razorpayid, 
         key_secret: user.razorpaysecret 
     });
 
-    // 4. Create the Razorpay order options (amount must be in Paise, so multiply by 100)
+    // 7. Create the Razorpay order options (amount must be in Paise, so multiply by 100)
     var options = {
         amount: Number.parseInt(amount) * 100,
         currency: "INR",
@@ -43,7 +46,7 @@ export const initiate = async (amount, to_username, paymentform) => {
     
     let x = await instance.orders.create(options);
     
-    // 5. Save pending payment to database
+    // 8. Save pending payment to database
     await Payment.create({
         oid: x.id,
         amount: amount, // Save standard rupee amount in DB
