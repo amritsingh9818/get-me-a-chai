@@ -2,6 +2,23 @@ import React from 'react'
 import PaymentPage from "@/app/components/paymentPage"
 import { fetchuser } from '@/app/action/useraction' // 👉 1. IMPORT THE FETCH FUNCTION
 
+//Session validation
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push('/login')
+    }
+    if (status === "authenticated" && session?.user?.name) {
+      setOldusername(session.user.name) 
+      getData() 
+    }
+  }, [status, router, session])
+
+  const getData = async () => {
+      let u = await fetchuser(session?.user?.name)
+      if (u) {
+          setForm(u)
+      }
+  }
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
