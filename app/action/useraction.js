@@ -20,7 +20,7 @@ export const initiate = async (amount, to_username, paymentform) => {
     let loggedInUser = await User.findOne({ email: session.user.email });
 
     // 3. Prevent self-payment by comparing database usernames
-    if (loggedInUser && loggedInUser.username === to_username) {
+    if (loggedInUser && loggedInUser.username !== to_username) {
         return { error: "Aap khud ke account par payment nahi bhej sakte!" };
     }
     
